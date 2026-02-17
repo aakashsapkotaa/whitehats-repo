@@ -44,20 +44,31 @@ security = HTTPBearer(auto_error=False)
 def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)):
     if credentials is None:
         raise HTTPException(status_code=401, detail="Not authenticated")
-    
+
     token = credentials.credentials
     payload = decode_access_token(token)
     if payload is None:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
-    
+
     user_id = payload.get("user_id")
     if not user_id:
         raise HTTPException(status_code=401, detail="Invalid token payload")
-    
+
     user = users_collection.find_one({"_id": ObjectId(user_id)})
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
-    
+
+    # Check if banned
+    if user.get("is_banned", False):
+        raise HTTPException(status_code=403, detail="Your account has been banned")
+
     user["_id"] = str(user["_id"])
     user.pop("password", None)
     return user
+
+
+def get_admin_user(current_user: dict = Depends(get_current_user)):
+    """Dependency that requires admin role."""
+    if current_user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    return current_user

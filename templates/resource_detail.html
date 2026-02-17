@@ -24,6 +24,7 @@
         <div style="display:flex; align-items:center; gap:20px;">
             <a href="/dashboard" style="color:#ccc; text-decoration:none;">Dashboard</a>
             <a href="/browse" style="color:#ccc; text-decoration:none;">Browse</a>
+            <a href="/community" style="color:#ccc; text-decoration:none;">Community</a>
             <button onclick="logout()" style="background:none; border:none; color:#999; cursor:pointer;"><i
                     class="fas fa-sign-out-alt"></i></button>
         </div>
@@ -73,11 +74,25 @@
                         <span id="res-reviews-count" style="color:#999; font-size:13px;"></span>
                     </div>
 
-                    <div style="display:flex; gap:12px; margin-top:24px;">
+                    <!-- Action Buttons -->
+                    <div style="display:flex; gap:12px; margin-top:24px; flex-wrap:wrap; align-items:center;">
                         <a id="download-btn" href="#" class="btn-primary-custom"
                             style="padding:10px 24px; border-radius:10px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
                             <i class="fas fa-download"></i> Download
                         </a>
+                        <!-- Like Button -->
+                        <button id="like-btn" onclick="toggleLike()" class="btn-outline-custom"
+                            style="padding:10px 20px; border-radius:10px; display:inline-flex; align-items:center; gap:8px;">
+                            <i id="like-icon" class="far fa-heart"></i>
+                            <span id="like-count">0</span>
+                        </button>
+                        <!-- Report Button -->
+                        <button id="report-btn" onclick="reportResource()"
+                            style="padding:10px 20px; border-radius:10px; background:none; border:1px solid #666; color:#999; cursor:pointer; display:inline-flex; align-items:center; gap:8px; font-size:13px; transition:all 0.3s;"
+                            onmouseover="this.style.borderColor='#ff6b6b'; this.style.color='#ff6b6b';"
+                            onmouseout="this.style.borderColor='#666'; this.style.color='#999';">
+                            <i class="fas fa-flag"></i> Report
+                        </button>
                         <button id="edit-btn" onclick="editResource()" class="btn-outline-custom"
                             style="padding:10px 24px; border-radius:10px; display:none;">
                             <i class="fas fa-edit"></i> Edit
@@ -142,11 +157,25 @@
                     </form>
                 </div>
 
+                <!-- Comments Section -->
+                <div class="glass-card" style="border-radius:12px; margin-bottom:24px;">
+                    <h3 style="font-size:18px; margin-bottom:16px;"><i class="fas fa-comments"
+                            style="color:#55D6BE; margin-right:8px;"></i>Comments</h3>
+                    <div style="display:flex; gap:12px; margin-bottom:20px;">
+                        <input type="text" id="comment-input" class="form-input" placeholder="Write a comment..."
+                            style="flex:1;">
+                        <button onclick="addComment()" class="btn-primary-custom"
+                            style="padding:10px 20px; border-radius:10px; white-space:nowrap;">Post</button>
+                    </div>
+                    <div id="comments-list" style="display:flex; flex-direction:column; gap:10px;">
+                        <p style="color:#666; font-size:14px; text-align:center; padding:16px;">Loading comments...</p>
+                    </div>
+                </div>
+
                 <!-- Review Section -->
                 <div class="glass-card" style="border-radius:12px; margin-bottom:24px;">
                     <h3 style="font-size:18px; margin-bottom:20px;">Rate & Review</h3>
 
-                    <!-- Star Rating Input -->
                     <div style="display:flex; align-items:center; gap:4px; margin-bottom:16px;">
                         <span style="color:#999; font-size:13px; margin-right:8px;">Your rating:</span>
                         <div id="star-input" style="display:flex; gap:4px;"></div>
@@ -154,7 +183,7 @@
 
                     <div style="display:flex; gap:12px; margin-bottom:24px;">
                         <input type="text" id="review-comment" class="form-input"
-                            placeholder="Write a comment (optional)" style="flex:1;">
+                            placeholder="Write a review (optional)" style="flex:1;">
                         <button onclick="submitReview()" class="btn-primary-custom"
                             style="padding:10px 20px; border-radius:10px; white-space:nowrap;">Submit Review</button>
                     </div>
@@ -163,7 +192,6 @@
                         style="display:none; padding:10px; border-radius:8px; margin-bottom:16px; font-size:13px; text-align:center;">
                     </div>
 
-                    <!-- Reviews List -->
                     <div id="reviews-list" style="display:flex; flex-direction:column; gap:12px;"></div>
                 </div>
             </div>
@@ -204,17 +232,13 @@
             return s;
         }
 
-        // Star rating input
         function initStarInput() {
             const container = document.getElementById('star-input');
             for (let i = 1; i <= 5; i++) {
                 const star = document.createElement('i');
                 star.className = 'fas fa-star';
                 star.style.cssText = 'font-size:24px; cursor:pointer; color:#444; transition:color 0.2s;';
-                star.addEventListener('click', () => {
-                    selectedRating = i;
-                    updateStarDisplay();
-                });
+                star.addEventListener('click', () => { selectedRating = i; updateStarDisplay(); });
                 star.addEventListener('mouseenter', () => highlightStars(i));
                 star.addEventListener('mouseleave', () => updateStarDisplay());
                 container.appendChild(star);
@@ -226,13 +250,10 @@
             for (let i = 0; i < 5; i++) stars[i].style.color = i < n ? '#f59e0b' : '#444';
         }
 
-        function updateStarDisplay() {
-            highlightStars(selectedRating);
-        }
+        function updateStarDisplay() { highlightStars(selectedRating); }
 
         async function loadResource() {
             try {
-                // Get current user
                 const meRes = await authFetch('/api/me');
                 if (meRes.ok) {
                     const user = await meRes.json();
@@ -254,7 +275,6 @@
                 document.getElementById('res-meta').textContent = `${r.subject} · Semester ${r.semester} · ${r.resource_type} · by ${r.uploader_name}`;
                 document.getElementById('res-description').textContent = r.description || 'No description provided.';
 
-                // Privacy badge
                 const badge = document.getElementById('privacy-badge');
                 if (r.privacy === 'private') {
                     badge.textContent = '🔒 Private';
@@ -266,38 +286,29 @@
                     badge.style.color = '#55D6BE';
                 }
 
-                // Tags
                 const tagsDiv = document.getElementById('res-tags');
                 tagsDiv.innerHTML = (r.tags || []).map(t => `<span style="background:rgba(85,214,190,0.15); color:#55D6BE; padding:4px 12px; border-radius:20px; font-size:12px;">${t}</span>`).join('');
 
-                // Rating
                 document.getElementById('res-rating').innerHTML = renderStars(r.avg_rating || 0);
                 document.getElementById('res-reviews-count').textContent = `${r.avg_rating || 0}/5 (${r.total_reviews || 0} reviews)`;
 
-                // Download button
-                document.getElementById('download-btn').href = '/api/resources/' + resourceId + '/download';
+                // Download
                 document.getElementById('download-btn').onclick = function (e) {
                     e.preventDefault();
-                    window.open('/api/resources/' + resourceId + '/download?token=' + token, '_blank');
-                    // Use fetch for auth
                     authFetch('/api/resources/' + resourceId + '/download')
                         .then(res => res.blob())
                         .then(blob => {
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a');
-                            a.href = url;
-                            a.download = r.file_name || 'download';
-                            a.click();
+                            a.href = url; a.download = r.file_name || 'download'; a.click();
                             URL.revokeObjectURL(url);
                         });
                 };
 
-                // Show edit/delete if owner
+                // Owner actions
                 if (r.uploader_id === currentUserId) {
                     document.getElementById('edit-btn').style.display = 'inline-flex';
                     document.getElementById('delete-btn').style.display = 'inline-flex';
-
-                    // Pre-fill edit form
                     document.getElementById('edit-title').value = r.title;
                     document.getElementById('edit-subject').value = r.subject;
                     document.getElementById('edit-semester').value = r.semester;
@@ -306,7 +317,9 @@
                     document.getElementById('edit-privacy').value = r.privacy;
                 }
 
-                // Load reviews
+                // Load community data
+                loadLikes();
+                loadComments();
                 loadReviews();
             } catch (e) {
                 document.getElementById('loading').innerHTML = '<p style="color:#ff6b6b;">Failed to load resource</p>';
@@ -314,6 +327,104 @@
             }
         }
 
+        // --- Likes ---
+        async function loadLikes() {
+            const res = await authFetch('/api/resources/' + resourceId + '/likes');
+            const data = await res.json();
+            document.getElementById('like-count').textContent = data.likes_count || 0;
+            const icon = document.getElementById('like-icon');
+            if (data.user_liked) {
+                icon.className = 'fas fa-heart';
+                icon.style.color = '#ff6b6b';
+            } else {
+                icon.className = 'far fa-heart';
+                icon.style.color = '';
+            }
+        }
+
+        async function toggleLike() {
+            const res = await authFetch('/api/resources/' + resourceId + '/like', { method: 'POST' });
+            const data = await res.json();
+            document.getElementById('like-count').textContent = data.likes_count || 0;
+            const icon = document.getElementById('like-icon');
+            if (data.liked) {
+                icon.className = 'fas fa-heart';
+                icon.style.color = '#ff6b6b';
+            } else {
+                icon.className = 'far fa-heart';
+                icon.style.color = '';
+            }
+        }
+
+        // --- Comments ---
+        async function loadComments() {
+            const res = await authFetch('/api/resources/' + resourceId + '/comments');
+            const data = await res.json();
+            const container = document.getElementById('comments-list');
+
+            if (data.comments.length === 0) {
+                container.innerHTML = '<p style="color:#666; font-size:14px; text-align:center; padding:16px;">No comments yet. Start the discussion!</p>';
+                return;
+            }
+
+            container.innerHTML = data.comments.map(c => `
+                <div style="padding:12px 14px; background:rgba(255,255,255,0.05); border-radius:10px;">
+                    <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                        <div style="width:28px; height:28px; border-radius:50%; background:#0F5257; display:flex; align-items:center; justify-content:center; font-weight:700; color:#55D6BE; font-size:11px;">
+                            ${(c.user_name || 'U').charAt(0).toUpperCase()}
+                        </div>
+                        <span style="font-weight:600; font-size:13px;">${c.user_name || 'Anonymous'}</span>
+                        <span style="color:#666; font-size:11px; margin-left:auto;">${new Date(c.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <p style="color:#ccc; font-size:13px; margin-left:38px;">${c.text}</p>
+                </div>
+            `).join('');
+        }
+
+        async function addComment() {
+            const input = document.getElementById('comment-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const res = await authFetch('/api/resources/' + resourceId + '/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: text })
+            });
+
+            if (res.ok) {
+                input.value = '';
+                loadComments();
+            } else {
+                const data = await res.json();
+                alert(data.detail || 'Failed to post comment');
+            }
+        }
+
+        // --- Report ---
+        async function reportResource() {
+            const reason = prompt("Why are you reporting this resource?", "Inappropriate content");
+            if (!reason) return;
+
+            const res = await authFetch('/api/resources/' + resourceId + '/report', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason: reason })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                const btn = document.getElementById('report-btn');
+                btn.innerHTML = '<i class="fas fa-check"></i> Reported';
+                btn.disabled = true;
+                btn.style.borderColor = '#55D6BE';
+                btn.style.color = '#55D6BE';
+            } else {
+                alert(data.detail || 'Report failed');
+            }
+        }
+
+        // --- Edit / Delete ---
         function editResource() {
             const form = document.getElementById('edit-form');
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
@@ -348,15 +459,14 @@
             }
         }
 
+        // --- Reviews ---
         async function submitReview() {
             if (selectedRating === 0) { alert('Please select a rating'); return; }
             const comment = document.getElementById('review-comment').value;
             const msgDiv = document.getElementById('review-msg');
 
             const params = new URLSearchParams({ rating: selectedRating, comment: comment });
-            const res = await authFetch('/api/resources/' + resourceId + '/reviews?' + params.toString(), {
-                method: 'POST'
-            });
+            const res = await authFetch('/api/resources/' + resourceId + '/reviews?' + params.toString(), { method: 'POST' });
             const data = await res.json();
 
             if (res.ok) {
@@ -365,7 +475,6 @@
                 msgDiv.style.color = '#55D6BE';
                 document.getElementById('review-comment').value = '';
                 loadReviews();
-                // Update displayed rating
                 document.getElementById('res-rating').innerHTML = renderStars(data.avg_rating);
                 document.getElementById('res-reviews-count').textContent = `${data.avg_rating}/5 (${data.total_reviews} reviews)`;
             } else {

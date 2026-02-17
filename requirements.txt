@@ -6,6 +6,11 @@ passlib[bcrypt]
 python-jose[cryptography]
 python-multipart
 jinja2
+email-validator
+Pillow
+pytesseract
+slowapi
+httpx
 
 #optional for oauth
 authlib

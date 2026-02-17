@@ -45,3 +45,23 @@ def browse_page(request: Request):
 @router.get("/resource/{resource_id}")
 def resource_detail_page(request: Request, resource_id: str):
     return templates.TemplateResponse("resource_detail.html", {"request": request, "resource_id": resource_id})
+
+
+@router.get("/leaderboard")
+def leaderboard_page(request: Request):
+    return templates.TemplateResponse("leaderboard.html", {"request": request})
+
+
+@router.get("/admin")
+def admin_page(request: Request):
+    return templates.TemplateResponse("admin.html", {"request": request})
+
+
+@router.get("/community")
+def community_page(request: Request):
+    return templates.TemplateResponse("community.html", {"request": request})
+
+
+@router.get("/ocr")
+def ocr_page(request: Request):
+    return templates.TemplateResponse("ocr.html", {"request": request})

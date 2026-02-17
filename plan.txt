@@ -1,18 +1,18 @@
-🏗 TEAM STRUCTURE (Recommended 4–5 Members)
-👨‍💻 1️⃣ Backend Lead (Auth + Core Logic)
-🎨 2️⃣ Frontend Lead (UI + Animation + Theme)
-🗄 3️⃣ Database Engineer (MongoDB + Queries)
-🔎 4️⃣ Search & Rating Developer
-🚀 5️⃣ Integration + Deployment Lead
+TEAM STRUCTURE (Recommended 4–5 Members)
+ Backend Lead (Auth + Core Logic)
+Frontend Lead (UI + Animation + Theme)
+Database Engineer (MongoDB + Queries)
+ Search & Rating Developer
+ Integration + Deployment Lead
 
 If 3 members → merge role 2 & 3.
 
-🚀 PHASE-WISE IMPLEMENTATION PLAN
+PHASE-WISE IMPLEMENTATION PLAN
 
 We build feature-by-feature but divide responsibilities.
 
-🔥 PHASE 1 — Branding + UI Foundation (45 mins)
-🎨 Frontend Lead:
+ PHASE 1 — Branding + UI Foundation (45 mins)
+Frontend Lead:
 
 Apply palette (#32292F, #55D6BE, etc.)
 
@@ -28,7 +28,7 @@ Add animated logo loader
 
 Add quote placeholder section
 
-🗄 Database Engineer:
+ Database Engineer:
 
 Create collections:
 
@@ -40,19 +40,18 @@ reviews
 
 quotes
 
-👨‍💻 Backend Lead:
+ Backend Lead:
 
 Setup FastAPI
 
 Setup MongoDB connection
 
 Create basic route rendering
-
-✅ Output:
+ Output:
 Beautiful UI running + DB connected.
 
-🔐 PHASE 2 — Authentication System (1–1.2 hours)
-👨‍💻 Backend Lead:
+ PHASE 2 — Authentication System (1–1.2 hours)
+ Backend Lead:
 
 Register API
 
@@ -76,7 +75,7 @@ semester
 
 avatar_url
 
-🎨 Frontend Lead:
+ Frontend Lead:
 
 Connect login form with fetch()
 
@@ -94,11 +93,11 @@ Ensure unique email
 
 Test login data flow
 
-✅ Output:
+Output:
 User can register → login → see loading animation → dashboard.
 
-🖼 PHASE 3 — Avatar + Profile Completion (40 mins)
-👨‍💻 Backend:
+ PHASE 3 — Avatar + Profile Completion (40 mins)
+ Backend:
 
 Avatar upload endpoint
 
@@ -106,7 +105,7 @@ Save file in uploads/
 
 Update user document
 
-🎨 Frontend:
+ Frontend:
 
 Profile form UI
 
@@ -114,15 +113,14 @@ Avatar preview
 
 Display avatar in navbar
 
-🗄 DB:
+ DB:
 
 Test file path saving
-
-✅ Output:
+ Output:
 Profile fully working.
 
-📚 PHASE 4 — Resource Upload System (1 hour)
-👨‍💻 Backend:
+ PHASE 4 — Resource Upload System (1 hour)
+Backend:
 
 Upload endpoint
 
@@ -138,7 +136,7 @@ Design resource document
 
 Optimize index for search fields
 
-🎨 Frontend:
+ Frontend:
 
 Upload form
 
@@ -148,10 +146,10 @@ Privacy toggle UI
 
 Success message animation
 
-✅ Output:
+ Output:
 Resources stored successfully.
 
-🔒 PHASE 5 — Access Control (45 mins)
+PHASE 5 — Access Control (45 mins)
 👨‍💻 Backend:
 
 Logic:

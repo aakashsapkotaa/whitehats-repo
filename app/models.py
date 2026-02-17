@@ -1,41 +1,38 @@
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr
 from typing import Optional, List
+from datetime import datetime
 
-# --- Auth ---
+
+# --- Auth Models ---
 class UserRegister(BaseModel):
     name: str
-    email: str
+    email: EmailStr
     password: str
-    college: str
-    branch: str
-    semester: int
+    college: str = ""
+    branch: str = ""
+    semester: int = 1
+
 
 class UserLogin(BaseModel):
-    email: str
+    email: EmailStr
     password: str
 
-# --- Resources ---
-class ResourceCreate(BaseModel):
-    title: str
-    subject: str
-    semester: int
-    resource_type: str  # notes, pdf, slides, paper, etc.
-    year: Optional[int] = None
-    description: Optional[str] = ""
-    tags: Optional[List[str]] = []
-    privacy: str = "public"  # "public" or "private"
 
-class ResourceUpdate(BaseModel):
-    title: Optional[str] = None
-    subject: Optional[str] = None
-    semester: Optional[int] = None
-    resource_type: Optional[str] = None
-    year: Optional[int] = None
-    description: Optional[str] = None
-    tags: Optional[List[str]] = None
-    privacy: Optional[str] = None
+# --- Community Models ---
+class CommentCreate(BaseModel):
+    text: str
 
-# --- Reviews ---
-class ReviewCreate(BaseModel):
-    rating: int = Field(ge=1, le=5)
-    comment: Optional[str] = ""
+
+class ReportCreate(BaseModel):
+    reason: str = "Inappropriate content"
+
+
+# --- Group Models ---
+class GroupCreate(BaseModel):
+    name: str
+    description: str = ""
+    category: str = "General"
+
+
+class GroupPostCreate(BaseModel):
+    text: str

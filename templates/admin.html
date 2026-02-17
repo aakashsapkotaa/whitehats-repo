@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - EduHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+
+    <nav class="navbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <a href="/dashboard" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:white;">
+                <img src="/static/images/LOGO_WHITE.png" style="width:32px; height:32px; object-fit:contain;">
+                <span style="font-weight:700; font-size:20px;">EduHub</span>
+            </a>
+        </div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <a href="/dashboard" style="color:#ccc; text-decoration:none;">Dashboard</a>
+            <a href="/admin" style="color:#ff6b6b; text-decoration:none; font-weight:600;">Admin</a>
+            <button onclick="logout()" style="background:none; border:none; color:#999; cursor:pointer;"><i
+                    class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </nav>
+
+    <main style="min-height:calc(100vh - 64px); padding:32px; padding-top:96px;">
+        <div style="max-width:900px; margin:0 auto;">
+            <div style="margin-bottom:40px;">
+                <h1 style="font-size:32px; margin-bottom:8px;"><i class="fas fa-shield-alt"
+                        style="color:#ff6b6b; margin-right:12px;"></i>Admin Panel</h1>
+                <p style="color:#999; font-size:14px;">Manage users, reports, and security</p>
+            </div>
+
+            <!-- Access denied message (non-admins) -->
+            <div id="access-denied" style="display:none; text-align:center; padding:60px;">
+                <i class="fas fa-lock" style="font-size:60px; color:#ff6b6b; margin-bottom:20px;"></i>
+                <h2>Admin Access Required</h2>
+                <p style="color:#999; margin-top:8px;">You do not have permission to view this page.</p>
+                <a href="/dashboard" class="btn-primary-custom"
+                    style="display:inline-block; padding:12px 32px; border-radius:10px; margin-top:20px; text-decoration:none;">←
+                    Back to Dashboard</a>
+            </div>
+
+            <!-- Admin Content -->
+            <div id="admin-content" style="display:none;">
+                <!-- Tab buttons -->
+                <div style="display:flex; gap:8px; margin-bottom:24px; flex-wrap:wrap;">
+                    <button onclick="switchTab('reports')" id="tab-reports" class="btn-primary-custom"
+                        style="padding:10px 20px; border-radius:10px;">Flagged Files</button>
+                    <button onclick="switchTab('malicious')" id="tab-malicious" class="btn-outline-custom"
+                        style="padding:10px 20px; border-radius:10px;">Malicious Uploads</button>
+                    <button onclick="switchTab('users')" id="tab-users" class="btn-outline-custom"
+                        style="padding:10px 20px; border-radius:10px;">All Users</button>
+                </div>
+
+                <!-- Reports tab -->
+                <div id="panel-reports" class="glass-card" style="border-radius:12px; padding:24px;">
+                    <h3 style="font-weight:700; margin-bottom:16px;"><i class="fas fa-flag"
+                            style="color:#ff6b6b; margin-right:8px;"></i>Reported Files</h3>
+                    <div id="reports-list" style="display:flex; flex-direction:column; gap:10px;">
+                        <p style="color:#666; text-align:center; padding:24px;">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Malicious tab -->
+                <div id="panel-malicious" class="glass-card" style="border-radius:12px; padding:24px; display:none;">
+                    <h3 style="font-weight:700; margin-bottom:16px;"><i class="fas fa-virus"
+                            style="color:#ff6b6b; margin-right:8px;"></i>Malicious Scan Logs</h3>
+                    <div id="malicious-list" style="display:flex; flex-direction:column; gap:10px;">
+                        <p style="color:#666; text-align:center; padding:24px;">Loading...</p>
+                    </div>
+                </div>
+
+                <!-- Users tab -->
+                <div id="panel-users" class="glass-card" style="border-radius:12px; padding:24px; display:none;">
+                    <h3 style="font-weight:700; margin-bottom:16px;"><i class="fas fa-users"
+                            style="color:#55D6BE; margin-right:8px;"></i>All Users</h3>
+                    <div id="users-list" style="display:flex; flex-direction:column; gap:10px;">
+                        <p style="color:#666; text-align:center; padding:24px;">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('eduhub_token');
+        if (!token) window.location.href = '/login';
+
+        async function authFetch(url, options = {}) {
+            options.headers = options.headers || {};
+            options.headers['Authorization'] = 'Bearer ' + token;
+            return fetch(url, options);
+        }
+
+        function logout() {
+            localStorage.removeItem('eduhub_token');
+            localStorage.removeItem('eduhub_user');
+            window.location.href = '/login';
+        }
+
+        function switchTab(tab) {
+            ['reports', 'malicious', 'users'].forEach(t => {
+                document.getElementById('panel-' + t).style.display = t === tab ? 'block' : 'none';
+                const btn = document.getElementById('tab-' + t);
+                btn.className = t === tab ? 'btn-primary-custom' : 'btn-outline-custom';
+            });
+        }
+
+        async function checkAdmin() {
+            try {
+                const res = await authFetch('/api/admin/flagged');
+                if (res.status === 403) {
+                    document.getElementById('access-denied').style.display = 'block';
+                    return false;
+                }
+                document.getElementById('admin-content').style.display = 'block';
+                return true;
+            } catch (e) {
+                document.getElementById('access-denied').style.display = 'block';
+                return false;
+            }
+        }
+
+        async function loadReports() {
+            const res = await authFetch('/api/admin/flagged');
+            const data = await res.json();
+            const container = document.getElementById('reports-list');
+
+            if (data.reports.length === 0) {
+                container.innerHTML = '<p style="color:#666; text-align:center; padding:24px;">No reports. Community is clean! 🎉</p>';
+                return;
+            }
+
+            container.innerHTML = data.reports.map(r => `
+                <div style="padding:14px; background:rgba(255,107,107,0.08); border-radius:10px; border-left:3px solid #ff6b6b;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <span style="font-weight:600; font-size:14px;">${r.resource_title || 'Unknown Resource'}</span>
+                        <span style="color:#666; font-size:11px;">${new Date(r.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <p style="color:#999; font-size:12px;">Reported by: ${r.reporter_name} · Reason: ${r.reason}</p>
+                    <div style="margin-top:8px;">
+                        <button onclick="adminDeleteResource('${r.resource_id}')" style="background:rgba(255,0,0,0.2); color:#ff6b6b; border:1px solid rgba(255,0,0,0.3); padding:4px 12px; border-radius:6px; cursor:pointer; font-size:11px;">
+                            <i class="fas fa-trash"></i> Remove Resource
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadMalicious() {
+            const res = await authFetch('/api/admin/malicious');
+            const data = await res.json();
+            const container = document.getElementById('malicious-list');
+
+            if (data.malicious_logs.length === 0) {
+                container.innerHTML = '<p style="color:#666; text-align:center; padding:24px;">No malicious uploads detected 🛡️</p>';
+                return;
+            }
+
+            container.innerHTML = data.malicious_logs.map(l => `
+                <div style="padding:14px; background:rgba(255,107,107,0.06); border-radius:10px; border-left:3px solid #ff6b6b;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <span style="font-weight:600; font-size:14px;">${l.filename}</span>
+                        <span style="color:#666; font-size:11px;">${new Date(l.scanned_at).toLocaleDateString()}</span>
+                    </div>
+                    <p style="color:#ff6b6b; font-size:12px;">${l.message}</p>
+                    <p style="color:#999; font-size:11px; margin-top:4px;">Uploader: ${l.uploader_name} · Hash: ${(l.file_hash || '').substring(0, 16)}...</p>
+                </div>
+            `).join('');
+        }
+
+        async function loadUsers() {
+            const res = await authFetch('/api/admin/users');
+            const data = await res.json();
+            const container = document.getElementById('users-list');
+
+            container.innerHTML = data.users.map(u => `
+                <div style="display:flex; align-items:center; gap:14px; padding:14px; background:rgba(255,255,255,0.03); border-radius:10px; ${u.is_banned ? 'opacity:0.5;' : ''}">
+                    <div style="width:36px; height:36px; border-radius:50%; background:#0F5257; display:flex; align-items:center; justify-content:center; font-weight:700; color:#55D6BE; font-size:14px;">
+                        ${(u.name || 'U').charAt(0).toUpperCase()}
+                    </div>
+                    <div style="flex:1;">
+                        <p style="font-weight:600; font-size:14px;">${u.name} ${u.is_banned ? '<span style="color:#ff6b6b; font-size:11px;">(BANNED)</span>' : ''} ${u.role === 'admin' ? '<span style="color:#f59e0b; font-size:11px;">👑 ADMIN</span>' : ''}</p>
+                        <p style="color:#999; font-size:11px;">${u.email} · ${u.college || 'No college'} · ${u.edutokens || 0} tokens</p>
+                    </div>
+                    ${u.role !== 'admin' ? `
+                        <button onclick="toggleBan('${u._id}', ${u.is_banned ? 'false' : 'true'})"
+                            style="padding:6px 14px; border-radius:6px; cursor:pointer; font-size:11px; border:1px solid ${u.is_banned ? '#55D6BE' : '#ff6b6b'}; background:${u.is_banned ? 'rgba(85,214,190,0.1)' : 'rgba(255,0,0,0.1)'}; color:${u.is_banned ? '#55D6BE' : '#ff6b6b'};">
+                            ${u.is_banned ? 'Unban' : 'Ban'}
+                        </button>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        async function toggleBan(userId, shouldBan) {
+            const action = shouldBan === 'true' || shouldBan === true ? 'ban' : 'unban';
+            if (!confirm(`Are you sure you want to ${action} this user?`)) return;
+
+            const res = await authFetch(`/api/admin/${action}/${userId}`, { method: 'POST' });
+            if (res.ok) {
+                loadUsers();
+            } else {
+                const data = await res.json();
+                alert(data.detail || 'Action failed');
+            }
+        }
+
+        async function adminDeleteResource(resourceId) {
+            if (!confirm('Delete this resource permanently?')) return;
+            const res = await authFetch(`/api/admin/resources/${resourceId}`, { method: 'DELETE' });
+            if (res.ok) {
+                loadReports();
+            } else {
+                const data = await res.json();
+                alert(data.detail || 'Delete failed');
+            }
+        }
+
+        async function init() {
+            const isAdmin = await checkAdmin();
+            if (isAdmin) {
+                loadReports();
+                loadMalicious();
+                loadUsers();
+            }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

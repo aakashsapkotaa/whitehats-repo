@@ -1,10 +1,12 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, Query
 from fastapi.responses import FileResponse
-from app.database import resources_collection, reviews_collection
+from app.database import resources_collection, reviews_collection, scan_logs_collection
 from app.auth import get_current_user
+from app.utils.scanner import compute_sha256, scan_upload, MAX_FILE_SIZE, ALLOWED_EXTENSIONS
+from app.utils.tokens import award_tokens
 from bson import ObjectId
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 import os, uuid
 
 router = APIRouter(prefix="/api", tags=["Resources"])
@@ -21,17 +23,53 @@ async def create_resource(
     resource_type: str = Form(...),
     year: Optional[int] = Form(None),
     description: str = Form(""),
-    tags: str = Form(""),  # comma-separated
+    tags: str = Form(""),
     privacy: str = Form("public"),
+    group_id: Optional[str] = Form(None),
     current_user: dict = Depends(get_current_user),
 ):
-    # Save file
-    ext = os.path.splitext(file.filename)[1]
+    # Read file content
+    content = await file.read()
+
+    # 1. File size check
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail=f"File too large. Max size is {MAX_FILE_SIZE // (1024*1024)}MB")
+
+    # 2. Extension check
+    ext = os.path.splitext(file.filename)[1].lower()
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"File type '{ext}' not allowed")
+
+    # 3. SHA256 duplicate check
+    file_hash = compute_sha256(content)
+    existing = resources_collection.find_one({"file_hash": file_hash})
+    if existing:
+        raise HTTPException(status_code=409, detail="Duplicate file detected. This file has already been uploaded.")
+
+    # 4. Malware scan
+    is_clean, scan_msg = scan_upload(content, file.filename)
+
+    # Log scan result
+    scan_logs_collection.insert_one({
+        "filename": file.filename,
+        "file_hash": file_hash,
+        "is_clean": is_clean,
+        "message": scan_msg,
+        "uploader_id": current_user["_id"],
+        "uploader_name": current_user["name"],
+        "scanned_at": datetime.utcnow(),
+    })
+
+    if not is_clean:
+        # Reward for reporting malware (the scan caught it)
+        award_tokens(current_user["_id"], "malware_report")
+        raise HTTPException(status_code=400, detail=f"File rejected: {scan_msg}")
+
+    # 5. Save file
     safe_name = f"{uuid.uuid4().hex[:12]}{ext}"
     filepath = os.path.join(UPLOAD_DIR, safe_name)
     os.makedirs(UPLOAD_DIR, exist_ok=True)
     with open(filepath, "wb") as f:
-        content = await file.read()
         f.write(content)
 
     tag_list = [t.strip() for t in tags.split(",") if t.strip()] if tags else []
@@ -47,14 +85,24 @@ async def create_resource(
         "privacy": privacy.lower(),
         "file_name": file.filename,
         "file_path": safe_name,
+        "file_hash": file_hash,
+        "file_size": len(content),
+        "scan_status": "clean",
+        "scan_result": scan_msg,
         "uploader_id": current_user["_id"],
         "uploader_name": current_user["name"],
         "college": current_user.get("college", ""),
         "created_at": datetime.utcnow(),
         "avg_rating": 0,
         "total_reviews": 0,
+        "likes_count": 0,
+        "group_id": group_id if group_id else None,
     }
     result = resources_collection.insert_one(resource)
+
+    # Reward safe upload tokens
+    award_tokens(current_user["_id"], "safe_upload")
+
     return {"message": "Resource uploaded successfully", "id": str(result.inserted_id)}
 
 
@@ -71,7 +119,6 @@ def list_resources(
 ):
     query = {}
 
-    # Search by title, subject, or tags
     if search:
         query["$or"] = [
             {"title": {"$regex": search, "$options": "i"}},
@@ -86,9 +133,7 @@ def list_resources(
     if privacy:
         query["privacy"] = privacy.lower()
 
-    # Access control: always hide private resources from other colleges
     if not privacy:
-        # No privacy filter set — show public + same-college private
         access_filter = {
             "$or": [
                 {"privacy": "public"},
@@ -99,7 +144,6 @@ def list_resources(
             query["$and"] = []
         query["$and"].append(access_filter)
     elif privacy == "private":
-        # Explicitly filtering private — only show same-college
         query["college"] = current_user.get("college", "")
 
     skip = (page - 1) * limit
@@ -120,9 +164,11 @@ def get_resource(resource_id: str, current_user: dict = Depends(get_current_user
     if not resource:
         raise HTTPException(status_code=404, detail="Resource not found")
 
-    # Access control for private resources
-    if resource["privacy"] == "private" and resource["college"] != current_user.get("college", ""):
+    if resource["privacy"] == "private" and resource.get("college") != current_user.get("college", ""):
         raise HTTPException(status_code=403, detail="Access denied. This resource is private to another college.")
+
+    # Award explore view token
+    award_tokens(current_user["_id"], "explore_view")
 
     resource["_id"] = str(resource["_id"])
     return resource
@@ -163,12 +209,10 @@ def delete_resource(resource_id: str, current_user: dict = Depends(get_current_u
     if resource["uploader_id"] != current_user["_id"]:
         raise HTTPException(status_code=403, detail="You can only delete your own resources")
 
-    # Delete file
     filepath = os.path.join(UPLOAD_DIR, resource["file_path"])
     if os.path.exists(filepath):
         os.remove(filepath)
 
-    # Delete reviews
     reviews_collection.delete_many({"resource_id": resource_id})
     resources_collection.delete_one({"_id": ObjectId(resource_id)})
     return {"message": "Resource deleted"}
@@ -180,7 +224,7 @@ def download_resource(resource_id: str, current_user: dict = Depends(get_current
     if not resource:
         raise HTTPException(status_code=404, detail="Resource not found")
 
-    if resource["privacy"] == "private" and resource["college"] != current_user.get("college", ""):
+    if resource["privacy"] == "private" and resource.get("college") != current_user.get("college", ""):
         raise HTTPException(status_code=403, detail="Access denied")
 
     filepath = os.path.join(UPLOAD_DIR, resource["file_path"])

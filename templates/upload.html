@@ -24,6 +24,7 @@
         <div style="display:flex; align-items:center; gap:20px;">
             <a href="/dashboard" style="color:#ccc; text-decoration:none;">Dashboard</a>
             <a href="/browse" style="color:#ccc; text-decoration:none;">Browse</a>
+            <a href="/community" style="color:#ccc; text-decoration:none;">Community</a>
             <button onclick="logout()" style="background:none; border:none; color:#999; cursor:pointer;"><i
                     class="fas fa-sign-out-alt"></i></button>
         </div>
@@ -133,6 +134,16 @@
                     </div>
                 </div>
 
+                <!-- Share to Group (optional) -->
+                <div>
+                    <label class="form-label">Share to Group (optional)</label>
+                    <select id="group_id" class="form-input">
+                        <option value="">— No group —</option>
+                    </select>
+                    <p style="color:#666; font-size:11px; margin-top:4px; margin-left:4px;">Share to a community group
+                        you've joined</p>
+                </div>
+
                 <button type="submit" class="btn-primary-custom"
                     style="width:100%; padding:14px; border-radius:12px; font-size:15px; margin-top:8px;">
                     <i class="fas fa-upload" style="margin-right:8px;"></i> Upload Resource
@@ -198,6 +209,8 @@
             formData.append('description', document.getElementById('description').value);
             formData.append('tags', document.getElementById('tags').value);
             formData.append('privacy', document.querySelector('input[name="privacy"]:checked').value);
+            const groupId = document.getElementById('group_id').value;
+            if (groupId) formData.append('group_id', groupId);
 
             btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Uploading...';
             btn.disabled = true;
@@ -225,6 +238,28 @@
             btn.innerHTML = '<i class="fas fa-upload" style="margin-right:8px;"></i> Upload Resource';
             btn.disabled = false;
         });
+
+        // Load user's groups for the dropdown
+        async function loadMyGroups() {
+            try {
+                const res = await fetch('/api/groups/my', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                const select = document.getElementById('group_id');
+                data.groups.forEach(g => {
+                    const opt = document.createElement('option');
+                    opt.value = g._id;
+                    opt.textContent = g.name;
+                    select.appendChild(opt);
+                });
+                // Pre-select from URL param
+                const params = new URLSearchParams(window.location.search);
+                const preselect = params.get('group');
+                if (preselect) select.value = preselect;
+            } catch (e) { console.error(e); }
+        }
+        loadMyGroups();
     </script>
 </body>
 
