@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduHub - Share Knowledge</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- ================= SECTION 1: LOGIN ================= -->
+    <section id="login-section" class="section min-h-screen flex items-center justify-center p-6">
+        <div class="glass-card w-full max-w-md">
+            <div class="text-center mb-8">
+                <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" 
+                     alt="EduHub Logo" 
+                     class="w-20 h-20 mx-auto object-contain mb-4">
+                <h1 class="text-3xl font-bold text-[#F5F3F5]">Welcome to EduHub</h1>
+                <p class="text-gray-400 text-sm mt-2">The Nexus of Shared Knowledge</p>
+            </div>
+            
+            <div class="space-y-3 mb-6">
+                <button onclick="handleSocialLogin('Google')" class="social-btn social-btn-google">
+                    <i class="fab fa-google text-red-500 text-lg"></i>
+                    <span>Continue with Google</span>
+                </button>
+                <button onclick="handleSocialLogin('GitHub')" class="social-btn social-btn-github">
+                    <i class="fab fa-github text-lg"></i>
+                    <span>Continue with GitHub</span>
+                </button>
+            </div>
+            
+            <div class="divider">
+                <span>Or manually</span>
+            </div>
+            
+            <form onsubmit="handleManualLogin(event)" class="space-y-4">
+                <div>
+                    <label class="form-label">Email Address</label>
+                    <input type="email" class="form-input" placeholder="student@eduhub.com" required>
+                </div>
+                <div>
+                    <label class="form-label">Password</label>
+                    <input type="password" class="form-input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary-custom w-full py-3 rounded-xl mt-2">
+                    Sign In
+                </button>
+            </form>
+            
+            <p class="text-center mt-6 text-sm text-gray-400">
+                Don't have an account? <a href="#" class="text-[#55D6BE] hover:underline">Register here</a>
+            </p>
+        </div>
+    </section>
+
+    <!-- ================= SECTION 2: AVATAR UPLOAD ================= -->
+    <section id="avatar-section" class="section min-h-screen flex items-center justify-center p-6 hidden-section">
+        <div class="glass-card w-full max-w-md text-center">
+            <h2 class="text-2xl font-bold mb-2 text-[#F5F3F5]">Set Your Identity</h2>
+            <p class="text-gray-400 mb-8 text-sm">How should the community see you?</p>
+
+            <!-- Avatar Preview -->
+            <div class="avatar-preview mx-auto mb-6" onclick="triggerFileInput()">
+                <div id="avatar-preview">
+                    <i class="fas fa-user text-4xl text-[#55D6BE]"></i>
+                </div>
+                <div class="avatar-camera">
+                    <i class="fas fa-camera text-sm"></i>
+                </div>
+            </div>
+
+            <input type="file" id="file-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+
+            <!-- Drop Area -->
+            <div id="drop-area" class="file-drop-area mb-6" onclick="triggerFileInput()">
+                <p class="text-sm text-gray-300">
+                    <i class="fas fa-cloud-upload-alt mr-2 text-[#55D6BE]"></i>
+                    <span id="file-name">Click to upload or drag & drop</span>
+                </p>
+            </div>
+
+            <button onclick="proceedToLoading()" class="btn-primary-custom w-full py-3 rounded-xl">
+                Continue to EduHub
+            </button>
+        </div>
+    </section>
+
+    <!-- ================= SECTION 3: LOADING SCREEN ================= -->
+    <section id="loading-section" class="loading-screen hidden-section">
+        <!-- Animated Logo -->
+        <div class="mb-8 relative">
+            <div class="absolute inset-0 bg-[#55D6BE] blur-[60px] opacity-30 rounded-full"></div>
+            <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" 
+                 alt="Loading" 
+                 class="logo-loader relative z-10">
+        </div>
+
+        <!-- Dynamic Quote -->
+        <div class="max-w-2xl text-center px-6 min-h-[120px] flex flex-col justify-center">
+            <p id="quote-text" class="text-xl md:text-2xl font-light italic text-[#F5F3F5] leading-relaxed"></p>
+            <p id="quote-author" class="text-sm font-bold text-[#55D6BE] mt-4 uppercase tracking-widest opacity-0 transition-opacity duration-1000"></p>
+        </div>
+
+        <!-- Loading Bar -->
+        <div class="w-64 h-1 bg-gray-700 rounded-full mt-8 overflow-hidden">
+            <div class="h-full bg-[#55D6BE] loading-bar w-1/2 rounded-full"></div>
+        </div>
+        <p class="text-xs text-gray-500 mt-3 animate-pulse">Syncing resources...</p>
+    </section>
+
+    <!-- ================= SECTION 4: DASHBOARD ================= -->
+    <section id="dashboard-section" class="section hidden-section min-h-screen flex flex-col">
+        <!-- Navbar -->
+        <nav class="navbar">
+            <div class="flex items-center gap-3">
+                <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" class="w-8 h-8 object-contain">
+                <span class="font-bold text-xl tracking-tight">EduHub</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="text-gray-300 hover:text-white transition">
+                    <i class="fas fa-bell text-lg"></i>
+                </button>
+                <div class="w-10 h-10 rounded-full bg-[#0F5257] overflow-hidden border-2 border-[#55D6BE]">
+                    <img id="nav-avatar" src="" class="w-full h-full object-cover hidden">
+                </div>
+                <button onclick="logout()" class="text-gray-400 hover:text-white transition">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8 overflow-y-auto">
+            <div class="max-w-6xl mx-auto">
+                <header class="mb-10">
+                    <h1 class="text-4xl font-bold mb-2">Hello, <span id="welcome-name">Learner</span>!</h1>
+                    <p class="text-gray-400">Ready to share some knowledge today?</p>
+                </header>
+
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                    <div class="stat-card">
+                        <h3 class="text-gray-400 text-xs uppercase tracking-wider">Resources Shared</h3>
+                        <p class="text-3xl font-bold mt-2">12</p>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #0F5257;">
+                        <h3 class="text-gray-400 text-xs uppercase tracking-wider">Community Rating</h3>
+                        <p class="text-3xl font-bold mt-2">4.8/5</p>
+                    </div>
+                    <div class="stat-card" style="border-left-color: #a855f7;">
+                        <h3 class="text-gray-400 text-xs uppercase tracking-wider">Study Streak</h3>
+                        <p class="text-3xl font-bold mt-2">5 Days</p>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                    <div class="glass-card rounded-xl p-6 cursor-pointer hover:border-[#55D6BE] transition border border-transparent">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-[#55D6BE]/20 flex items-center justify-center">
+                                <i class="fas fa-upload text-[#55D6BE] text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">Upload Resource</h3>
+                                <p class="text-gray-400 text-sm">Share notes, PDFs, or links</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card rounded-xl p-6 cursor-pointer hover:border-[#55D6BE] transition border border-transparent">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-lg bg-[#0F5257]/50 flex items-center justify-center">
+                                <i class="fas fa-search text-[#55D6BE] text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-lg">Browse Resources</h3>
+                                <p class="text-gray-400 text-sm">Find study materials</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="glass-card rounded-xl p-6">
+                    <h3 class="font-bold text-lg mb-4">Recent Activity</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 bg-white/5 rounded-lg">
+                            <div class="w-10 h-10 rounded-full bg-[#55D6BE] flex items-center justify-center text-[#32292F] font-bold">JD</div>
+                            <div class="flex-1">
+                                <p class="font-medium">John Doe shared a new note</p>
+                                <p class="text-sm text-gray-400">Advanced Calculus - Chapter 5</p>
+                            </div>
+                            <span class="text-xs text-gray-500">2h ago</span>
+                        </div>
+                        <div class="flex items-center gap-4 p-4 bg-white/5 rounded-lg">
+                            <div class="w-10 h-10 rounded-full bg-[#0F5257] flex items-center justify-center text-white font-bold">AS</div>
+                            <div class="flex-1">
+                                <p class="font-medium">Alice Smith uploaded a PDF</p>
+                                <p class="text-sm text-gray-400">Machine Learning Basics</p>
+                            </div>
+                            <span class="text-xs text-gray-500">5h ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </section>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

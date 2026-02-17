@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EduHub Loading</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<div style="height:100vh; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+
+    <img src="/static/images/logo.png" class="logo-loader">
+
+    <h3 class="fade-in" style="margin-top:30px;" id="quoteText">
+        Loading inspiration...
+    </h3>
+
+</div>
+
+<script>
+async function fetchQuote() {
+    try {
+        const response = await fetch("/quotes/random");
+        const data = await response.json();
+        document.getElementById("quoteText").innerText = `"${data.text}" — ${data.author}`;
+    } catch {
+        document.getElementById("quoteText").innerText =
+        "Sharing knowledge is the first step toward collective growth.";
+    }
+}
+
+fetchQuote();
+
+setTimeout(() => {
+    window.location.href = "/dashboard";
+}, 3500);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,292 @@
+🏗 TEAM STRUCTURE (Recommended 4–5 Members)
+👨‍💻 1️⃣ Backend Lead (Auth + Core Logic)
+🎨 2️⃣ Frontend Lead (UI + Animation + Theme)
+🗄 3️⃣ Database Engineer (MongoDB + Queries)
+🔎 4️⃣ Search & Rating Developer
+🚀 5️⃣ Integration + Deployment Lead
+
+If 3 members → merge role 2 & 3.
+
+🚀 PHASE-WISE IMPLEMENTATION PLAN
+
+We build feature-by-feature but divide responsibilities.
+
+🔥 PHASE 1 — Branding + UI Foundation (45 mins)
+🎨 Frontend Lead:
+
+Apply palette (#32292F, #55D6BE, etc.)
+
+Create:
+
+Landing page
+
+Login page
+
+Glass UI components
+
+Add animated logo loader
+
+Add quote placeholder section
+
+🗄 Database Engineer:
+
+Create collections:
+
+users
+
+resources
+
+reviews
+
+quotes
+
+👨‍💻 Backend Lead:
+
+Setup FastAPI
+
+Setup MongoDB connection
+
+Create basic route rendering
+
+✅ Output:
+Beautiful UI running + DB connected.
+
+🔐 PHASE 2 — Authentication System (1–1.2 hours)
+👨‍💻 Backend Lead:
+
+Register API
+
+Login API
+
+Password hashing
+
+JWT creation
+
+Protected route dependency
+
+Save user:
+
+name
+
+college
+
+branch
+
+semester
+
+avatar_url
+
+🎨 Frontend Lead:
+
+Connect login form with fetch()
+
+Store JWT in localStorage
+
+Redirect to loading page
+
+Show animated loader
+
+🗄 Database Engineer:
+
+Create proper user schema
+
+Ensure unique email
+
+Test login data flow
+
+✅ Output:
+User can register → login → see loading animation → dashboard.
+
+🖼 PHASE 3 — Avatar + Profile Completion (40 mins)
+👨‍💻 Backend:
+
+Avatar upload endpoint
+
+Save file in uploads/
+
+Update user document
+
+🎨 Frontend:
+
+Profile form UI
+
+Avatar preview
+
+Display avatar in navbar
+
+🗄 DB:
+
+Test file path saving
+
+✅ Output:
+Profile fully working.
+
+📚 PHASE 4 — Resource Upload System (1 hour)
+👨‍💻 Backend:
+
+Upload endpoint
+
+Save metadata
+
+Save privacy level
+
+Save uploader’s college
+
+🗄 Database Engineer:
+
+Design resource document
+
+Optimize index for search fields
+
+🎨 Frontend:
+
+Upload form
+
+Tag input
+
+Privacy toggle UI
+
+Success message animation
+
+✅ Output:
+Resources stored successfully.
+
+🔒 PHASE 5 — Access Control (45 mins)
+👨‍💻 Backend:
+
+Logic:
+
+If resource is Private:
+
+resource.college == current_user.college
+
+Else deny.
+
+🎨 Frontend:
+
+Show badge:
+
+🔒 Private
+
+🌍 Public
+
+Show access denied message UI
+
+🗄 DB:
+
+Test cross-college accounts
+
+✅ Output:
+Private access properly restricted.
+
+🔍 PHASE 6 — Search + Filter System (1 hour)
+👨‍💻 Backend:
+
+Search by:
+
+title
+
+subject
+
+tags
+
+Filter:
+
+semester
+
+branch
+
+resource type
+
+privacy
+
+Sorting:
+
+latest
+
+highest rated
+
+🗄 DB:
+
+Use MongoDB query filters
+
+Ensure combined filters work
+
+🎨 Frontend:
+
+Search bar
+
+Filter dropdowns
+
+Dynamic result grid
+
+✅ Output:
+Professional search system.
+
+⭐ PHASE 7 — Rating & Review System (50 mins)
+👨‍💻 Backend:
+
+Review endpoint
+
+One review per user rule
+
+Average rating calculation
+
+🗄 DB:
+
+Link reviews to resource_id
+
+Index review collection
+
+🎨 Frontend:
+
+Star rating UI
+
+Comment box
+
+Display average rating
+
+✅ Output:
+Rating system complete.
+
+✨ PHASE 8 — Quote Engine (20 mins)
+🗄 DB:
+
+Insert 10–15 motivational quotes
+
+👨‍💻 Backend:
+
+/quotes/random endpoint
+
+🎨 Frontend:
+
+Animate quote fade-in under logo
+
+Change quote each login
+
+✅ Output:
+Premium motivational loading experience.
+
+🚀 PHASE 9 — Deployment (Final 30–40 mins)
+🚀 Integration Lead:
+
+Push final code to GitHub
+
+Deploy backend (Render)
+
+Deploy frontend (Vercel)
+
+Connect MongoDB Atlas
+
+Test production
+
+🎯 FINAL TEAM STRATEGY
+
+Work in parallel:
+
+Member	Work
+Backend Lead	Auth + Upload + Access
+Frontend Lead	UI + Animations + Integration
+DB Engineer	Schema + Queries + Filters
+Search/Rating Dev	Filters + Review logic
+Deployment Lead	Git + Hosting
