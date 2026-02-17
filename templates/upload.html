@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Resource - EduHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <a href="/dashboard" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:white;">
+                <img src="/static/images/LOGO_WHITE.png" style="width:32px; height:32px; object-fit:contain;">
+                <span style="font-weight:700; font-size:20px;">EduHub</span>
+            </a>
+        </div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <a href="/dashboard" style="color:#ccc; text-decoration:none;">Dashboard</a>
+            <a href="/browse" style="color:#ccc; text-decoration:none;">Browse</a>
+            <button onclick="logout()" style="background:none; border:none; color:#999; cursor:pointer;"><i
+                    class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </nav>
+
+    <main style="min-height:calc(100vh - 64px); padding:32px; padding-top:96px;">
+        <div style="max-width:640px; margin:0 auto;">
+            <h1 style="font-size:28px; margin-bottom:8px;">Upload Resource</h1>
+            <p style="color:#999; margin-bottom:32px;">Share your knowledge with the community</p>
+
+            <div id="success-msg"
+                style="display:none; background:rgba(85,214,190,0.15); color:#55D6BE; padding:14px; border-radius:10px; margin-bottom:20px; text-align:center;">
+            </div>
+            <div id="error-msg"
+                style="display:none; background:rgba(255,0,0,0.15); color:#ff6b6b; padding:14px; border-radius:10px; margin-bottom:20px; text-align:center;">
+            </div>
+
+            <form id="upload-form" class="glass-card"
+                style="border-radius:12px; display:flex; flex-direction:column; gap:16px;">
+                <!-- File Upload -->
+                <div>
+                    <label class="form-label">File (PDF, DOCX, PPT, etc.)</label>
+                    <div class="file-drop-area" id="drop-area" onclick="document.getElementById('file-input').click()">
+                        <i class="fas fa-cloud-upload-alt"
+                            style="font-size:32px; color:#55D6BE; margin-bottom:8px;"></i>
+                        <p id="file-name" style="font-size:13px; color:#ccc;">Click to upload or drag & drop</p>
+                    </div>
+                    <input type="file" id="file-input" style="display:none;" required>
+                </div>
+
+                <!-- Title -->
+                <div>
+                    <label class="form-label">Title</label>
+                    <input type="text" id="title" class="form-input" placeholder="e.g. Data Structures Notes Chapter 5"
+                        required>
+                </div>
+
+                <!-- Subject & Semester -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div>
+                        <label class="form-label">Subject</label>
+                        <input type="text" id="subject" class="form-input" placeholder="e.g. Data Structures" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Semester</label>
+                        <select id="semester" class="form-input" required>
+                            <option value="">Select</option>
+                            <option value="1">1st</option>
+                            <option value="2">2nd</option>
+                            <option value="3">3rd</option>
+                            <option value="4">4th</option>
+                            <option value="5">5th</option>
+                            <option value="6">6th</option>
+                            <option value="7">7th</option>
+                            <option value="8">8th</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Resource Type & Year -->
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div>
+                        <label class="form-label">Resource Type</label>
+                        <select id="resource_type" class="form-input" required>
+                            <option value="">Select</option>
+                            <option value="notes">Notes</option>
+                            <option value="slides">Slides</option>
+                            <option value="paper">Past Paper</option>
+                            <option value="assignment">Assignment</option>
+                            <option value="book">Book / E-Book</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Year (optional)</label>
+                        <input type="number" id="year" class="form-input" placeholder="e.g. 2024">
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="form-label">Description</label>
+                    <textarea id="description" class="form-input" rows="3"
+                        placeholder="Brief description of the resource..." style="resize:vertical;"></textarea>
+                </div>
+
+                <!-- Tags -->
+                <div>
+                    <label class="form-label">Tags (comma separated)</label>
+                    <input type="text" id="tags" class="form-input" placeholder="e.g. DSA, Trees, Sorting">
+                </div>
+
+                <!-- Privacy -->
+                <div>
+                    <label class="form-label">Privacy</label>
+                    <div style="display:flex; gap:16px;">
+                        <label
+                            style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 20px; border-radius:10px; background:rgba(85,214,190,0.15); border:1px solid #55D6BE;">
+                            <input type="radio" name="privacy" value="public" checked style="accent-color:#55D6BE;">
+                            <span>🌍 Public</span>
+                        </label>
+                        <label
+                            style="display:flex; align-items:center; gap:8px; cursor:pointer; padding:10px 20px; border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid #444;">
+                            <input type="radio" name="privacy" value="private" style="accent-color:#55D6BE;">
+                            <span>🔒 Private (College only)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary-custom"
+                    style="width:100%; padding:14px; border-radius:12px; font-size:15px; margin-top:8px;">
+                    <i class="fas fa-upload" style="margin-right:8px;"></i> Upload Resource
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('eduhub_token');
+        if (!token) window.location.href = '/login';
+
+        function logout() {
+            localStorage.removeItem('eduhub_token');
+            localStorage.removeItem('eduhub_user');
+            window.location.href = '/login';
+        }
+
+        // File input display
+        document.getElementById('file-input').addEventListener('change', function () {
+            if (this.files[0]) {
+                document.getElementById('file-name').textContent = this.files[0].name;
+                document.getElementById('file-name').style.color = '#55D6BE';
+            }
+        });
+
+        // Drag and drop
+        const dropArea = document.getElementById('drop-area');
+        ['dragenter', 'dragover'].forEach(e => dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.add('active'); }));
+        ['dragleave', 'drop'].forEach(e => dropArea.addEventListener(e, ev => { ev.preventDefault(); dropArea.classList.remove('active'); }));
+        dropArea.addEventListener('drop', function (e) {
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                document.getElementById('file-input').files = files;
+                document.getElementById('file-name').textContent = files[0].name;
+                document.getElementById('file-name').style.color = '#55D6BE';
+            }
+        });
+
+        // Form submit
+        document.getElementById('upload-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            const errorDiv = document.getElementById('error-msg');
+            const successDiv = document.getElementById('success-msg');
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            const fileInput = document.getElementById('file-input');
+            if (!fileInput.files[0]) {
+                errorDiv.textContent = 'Please select a file';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('title', document.getElementById('title').value);
+            formData.append('subject', document.getElementById('subject').value);
+            formData.append('semester', document.getElementById('semester').value);
+            formData.append('resource_type', document.getElementById('resource_type').value);
+            formData.append('year', document.getElementById('year').value || '');
+            formData.append('description', document.getElementById('description').value);
+            formData.append('tags', document.getElementById('tags').value);
+            formData.append('privacy', document.querySelector('input[name="privacy"]:checked').value);
+
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Uploading...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/resources', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: formData
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Upload failed');
+
+                successDiv.textContent = '✅ Resource uploaded successfully!';
+                successDiv.style.display = 'block';
+                this.reset();
+                document.getElementById('file-name').textContent = 'Click to upload or drag & drop';
+                document.getElementById('file-name').style.color = '#ccc';
+
+                setTimeout(() => window.location.href = '/resource/' + data.id, 1500);
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+            }
+            btn.innerHTML = '<i class="fas fa-upload" style="margin-right:8px;"></i> Upload Resource';
+            btn.disabled = false;
+        });
+    </script>
+</body>
+
+</html>

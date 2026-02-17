@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resource - EduHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <a href="/dashboard" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:white;">
+                <img src="/static/images/LOGO_WHITE.png" style="width:32px; height:32px; object-fit:contain;">
+                <span style="font-weight:700; font-size:20px;">EduHub</span>
+            </a>
+        </div>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <a href="/dashboard" style="color:#ccc; text-decoration:none;">Dashboard</a>
+            <a href="/browse" style="color:#ccc; text-decoration:none;">Browse</a>
+            <button onclick="logout()" style="background:none; border:none; color:#999; cursor:pointer;"><i
+                    class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </nav>
+
+    <main style="min-height:calc(100vh - 64px); padding:32px; padding-top:96px;">
+        <div style="max-width:800px; margin:0 auto;">
+            <!-- Access Denied Message -->
+            <div id="access-denied" style="display:none; text-align:center; padding:60px 24px;">
+                <i class="fas fa-lock" style="font-size:60px; color:#ff6b6b; margin-bottom:20px;"></i>
+                <h2 style="font-size:24px; margin-bottom:12px;">Access Denied</h2>
+                <p style="color:#999; max-width:400px; margin:0 auto;">This resource is private and only accessible to
+                    students from the same college.</p>
+                <a href="/browse" class="btn-primary-custom"
+                    style="display:inline-block; padding:12px 32px; border-radius:10px; margin-top:24px; text-decoration:none;">←
+                    Back to Browse</a>
+            </div>
+
+            <!-- Resource Content -->
+            <div id="resource-content" style="display:none;">
+                <!-- Header -->
+                <div style="margin-bottom:28px;">
+                    <a href="/browse" style="color:#55D6BE; text-decoration:none; font-size:13px;">← Back to Browse</a>
+                </div>
+
+                <div class="glass-card" style="border-radius:12px; margin-bottom:24px;">
+                    <div style="display:flex; align-items:flex-start; gap:20px; margin-bottom:20px;">
+                        <div id="type-icon"
+                            style="width:56px; height:56px; border-radius:12px; background:linear-gradient(135deg, #55D6BE, #0F5257); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                            <i class="fas fa-file-alt" style="color:white; font-size:22px;"></i>
+                        </div>
+                        <div style="flex:1;">
+                            <h1 id="res-title" style="font-size:24px; margin-bottom:6px;"></h1>
+                            <p id="res-meta" style="color:#999; font-size:13px;"></p>
+                        </div>
+                        <span id="privacy-badge"
+                            style="padding:6px 14px; border-radius:20px; font-size:12px; font-weight:600;"></span>
+                    </div>
+
+                    <p id="res-description" style="color:#ccc; font-size:14px; line-height:1.7; margin-bottom:20px;">
+                    </p>
+
+                    <div id="res-tags" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;"></div>
+
+                    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                        <div id="res-rating" style="display:flex; align-items:center; gap:6px;"></div>
+                        <span id="res-reviews-count" style="color:#999; font-size:13px;"></span>
+                    </div>
+
+                    <div style="display:flex; gap:12px; margin-top:24px;">
+                        <a id="download-btn" href="#" class="btn-primary-custom"
+                            style="padding:10px 24px; border-radius:10px; text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                        <button id="edit-btn" onclick="editResource()" class="btn-outline-custom"
+                            style="padding:10px 24px; border-radius:10px; display:none;">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button id="delete-btn" onclick="deleteResource()"
+                            style="padding:10px 24px; border-radius:10px; background:rgba(255,0,0,0.2); color:#ff6b6b; border:1px solid rgba(255,0,0,0.3); cursor:pointer; display:none;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Edit Form (hidden by default) -->
+                <div id="edit-form" class="glass-card" style="border-radius:12px; margin-bottom:24px; display:none;">
+                    <h3 style="font-size:18px; margin-bottom:16px;">Edit Resource</h3>
+                    <form id="edit-resource-form" style="display:flex; flex-direction:column; gap:14px;">
+                        <div>
+                            <label class="form-label">Title</label>
+                            <input type="text" id="edit-title" class="form-input" required>
+                        </div>
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                            <div>
+                                <label class="form-label">Subject</label>
+                                <input type="text" id="edit-subject" class="form-input" required>
+                            </div>
+                            <div>
+                                <label class="form-label">Semester</label>
+                                <select id="edit-semester" class="form-input">
+                                    <option value="1">1</option>
+                                    <option value="2">2</option>
+                                    <option value="3">3</option>
+                                    <option value="4">4</option>
+                                    <option value="5">5</option>
+                                    <option value="6">6</option>
+                                    <option value="7">7</option>
+                                    <option value="8">8</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="form-label">Description</label>
+                            <textarea id="edit-description" class="form-input" rows="3"
+                                style="resize:vertical;"></textarea>
+                        </div>
+                        <div>
+                            <label class="form-label">Tags (comma separated)</label>
+                            <input type="text" id="edit-tags" class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">Privacy</label>
+                            <select id="edit-privacy" class="form-input">
+                                <option value="public">🌍 Public</option>
+                                <option value="private">🔒 Private</option>
+                            </select>
+                        </div>
+                        <div style="display:flex; gap:12px;">
+                            <button type="submit" class="btn-primary-custom"
+                                style="padding:10px 24px; border-radius:10px;">Save Changes</button>
+                            <button type="button" onclick="document.getElementById('edit-form').style.display='none'"
+                                class="btn-outline-custom"
+                                style="padding:10px 24px; border-radius:10px;">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Review Section -->
+                <div class="glass-card" style="border-radius:12px; margin-bottom:24px;">
+                    <h3 style="font-size:18px; margin-bottom:20px;">Rate & Review</h3>
+
+                    <!-- Star Rating Input -->
+                    <div style="display:flex; align-items:center; gap:4px; margin-bottom:16px;">
+                        <span style="color:#999; font-size:13px; margin-right:8px;">Your rating:</span>
+                        <div id="star-input" style="display:flex; gap:4px;"></div>
+                    </div>
+
+                    <div style="display:flex; gap:12px; margin-bottom:24px;">
+                        <input type="text" id="review-comment" class="form-input"
+                            placeholder="Write a comment (optional)" style="flex:1;">
+                        <button onclick="submitReview()" class="btn-primary-custom"
+                            style="padding:10px 20px; border-radius:10px; white-space:nowrap;">Submit Review</button>
+                    </div>
+
+                    <div id="review-msg"
+                        style="display:none; padding:10px; border-radius:8px; margin-bottom:16px; font-size:13px; text-align:center;">
+                    </div>
+
+                    <!-- Reviews List -->
+                    <div id="reviews-list" style="display:flex; flex-direction:column; gap:12px;"></div>
+                </div>
+            </div>
+
+            <!-- Loading -->
+            <div id="loading" style="text-align:center; padding:60px;">
+                <i class="fas fa-circle-notch fa-spin" style="font-size:32px; color:#55D6BE;"></i>
+                <p style="color:#999; margin-top:16px;">Loading resource...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const token = localStorage.getItem('eduhub_token');
+        if (!token) window.location.href = '/login';
+
+        const resourceId = '{{ resource_id }}';
+        let selectedRating = 0;
+        let currentUserId = null;
+
+        function logout() {
+            localStorage.removeItem('eduhub_token');
+            localStorage.removeItem('eduhub_user');
+            window.location.href = '/login';
+        }
+
+        async function authFetch(url, options = {}) {
+            options.headers = options.headers || {};
+            options.headers['Authorization'] = 'Bearer ' + token;
+            return fetch(url, options);
+        }
+
+        function renderStars(rating) {
+            let s = '';
+            for (let i = 1; i <= 5; i++) {
+                s += `<i class="fas fa-star" style="color:${i <= Math.round(rating) ? '#f59e0b' : '#444'}; font-size:14px;"></i>`;
+            }
+            return s;
+        }
+
+        // Star rating input
+        function initStarInput() {
+            const container = document.getElementById('star-input');
+            for (let i = 1; i <= 5; i++) {
+                const star = document.createElement('i');
+                star.className = 'fas fa-star';
+                star.style.cssText = 'font-size:24px; cursor:pointer; color:#444; transition:color 0.2s;';
+                star.addEventListener('click', () => {
+                    selectedRating = i;
+                    updateStarDisplay();
+                });
+                star.addEventListener('mouseenter', () => highlightStars(i));
+                star.addEventListener('mouseleave', () => updateStarDisplay());
+                container.appendChild(star);
+            }
+        }
+
+        function highlightStars(n) {
+            const stars = document.getElementById('star-input').children;
+            for (let i = 0; i < 5; i++) stars[i].style.color = i < n ? '#f59e0b' : '#444';
+        }
+
+        function updateStarDisplay() {
+            highlightStars(selectedRating);
+        }
+
+        async function loadResource() {
+            try {
+                // Get current user
+                const meRes = await authFetch('/api/me');
+                if (meRes.ok) {
+                    const user = await meRes.json();
+                    currentUserId = user._id;
+                }
+
+                const res = await authFetch('/api/resources/' + resourceId);
+                document.getElementById('loading').style.display = 'none';
+
+                if (res.status === 403) {
+                    document.getElementById('access-denied').style.display = 'block';
+                    return;
+                }
+                if (!res.ok) throw new Error('Resource not found');
+
+                const r = await res.json();
+                document.getElementById('resource-content').style.display = 'block';
+                document.getElementById('res-title').textContent = r.title;
+                document.getElementById('res-meta').textContent = `${r.subject} · Semester ${r.semester} · ${r.resource_type} · by ${r.uploader_name}`;
+                document.getElementById('res-description').textContent = r.description || 'No description provided.';
+
+                // Privacy badge
+                const badge = document.getElementById('privacy-badge');
+                if (r.privacy === 'private') {
+                    badge.textContent = '🔒 Private';
+                    badge.style.background = 'rgba(255,100,100,0.15)';
+                    badge.style.color = '#ff6b6b';
+                } else {
+                    badge.textContent = '🌍 Public';
+                    badge.style.background = 'rgba(85,214,190,0.15)';
+                    badge.style.color = '#55D6BE';
+                }
+
+                // Tags
+                const tagsDiv = document.getElementById('res-tags');
+                tagsDiv.innerHTML = (r.tags || []).map(t => `<span style="background:rgba(85,214,190,0.15); color:#55D6BE; padding:4px 12px; border-radius:20px; font-size:12px;">${t}</span>`).join('');
+
+                // Rating
+                document.getElementById('res-rating').innerHTML = renderStars(r.avg_rating || 0);
+                document.getElementById('res-reviews-count').textContent = `${r.avg_rating || 0}/5 (${r.total_reviews || 0} reviews)`;
+
+                // Download button
+                document.getElementById('download-btn').href = '/api/resources/' + resourceId + '/download';
+                document.getElementById('download-btn').onclick = function (e) {
+                    e.preventDefault();
+                    window.open('/api/resources/' + resourceId + '/download?token=' + token, '_blank');
+                    // Use fetch for auth
+                    authFetch('/api/resources/' + resourceId + '/download')
+                        .then(res => res.blob())
+                        .then(blob => {
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = r.file_name || 'download';
+                            a.click();
+                            URL.revokeObjectURL(url);
+                        });
+                };
+
+                // Show edit/delete if owner
+                if (r.uploader_id === currentUserId) {
+                    document.getElementById('edit-btn').style.display = 'inline-flex';
+                    document.getElementById('delete-btn').style.display = 'inline-flex';
+
+                    // Pre-fill edit form
+                    document.getElementById('edit-title').value = r.title;
+                    document.getElementById('edit-subject').value = r.subject;
+                    document.getElementById('edit-semester').value = r.semester;
+                    document.getElementById('edit-description').value = r.description || '';
+                    document.getElementById('edit-tags').value = (r.tags || []).join(', ');
+                    document.getElementById('edit-privacy').value = r.privacy;
+                }
+
+                // Load reviews
+                loadReviews();
+            } catch (e) {
+                document.getElementById('loading').innerHTML = '<p style="color:#ff6b6b;">Failed to load resource</p>';
+                console.error(e);
+            }
+        }
+
+        function editResource() {
+            const form = document.getElementById('edit-form');
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+
+        document.getElementById('edit-resource-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const formData = new FormData();
+            formData.append('title', document.getElementById('edit-title').value);
+            formData.append('subject', document.getElementById('edit-subject').value);
+            formData.append('semester', document.getElementById('edit-semester').value);
+            formData.append('description', document.getElementById('edit-description').value);
+            formData.append('tags', document.getElementById('edit-tags').value);
+            formData.append('privacy', document.getElementById('edit-privacy').value);
+
+            const res = await authFetch('/api/resources/' + resourceId, { method: 'PUT', body: formData });
+            if (res.ok) {
+                document.getElementById('edit-form').style.display = 'none';
+                loadResource();
+            } else {
+                alert('Failed to update resource');
+            }
+        });
+
+        async function deleteResource() {
+            if (!confirm('Are you sure you want to delete this resource?')) return;
+            const res = await authFetch('/api/resources/' + resourceId, { method: 'DELETE' });
+            if (res.ok) {
+                window.location.href = '/browse';
+            } else {
+                alert('Failed to delete resource');
+            }
+        }
+
+        async function submitReview() {
+            if (selectedRating === 0) { alert('Please select a rating'); return; }
+            const comment = document.getElementById('review-comment').value;
+            const msgDiv = document.getElementById('review-msg');
+
+            const params = new URLSearchParams({ rating: selectedRating, comment: comment });
+            const res = await authFetch('/api/resources/' + resourceId + '/reviews?' + params.toString(), {
+                method: 'POST'
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                msgDiv.textContent = '✅ ' + data.message;
+                msgDiv.style.background = 'rgba(85,214,190,0.15)';
+                msgDiv.style.color = '#55D6BE';
+                document.getElementById('review-comment').value = '';
+                loadReviews();
+                // Update displayed rating
+                document.getElementById('res-rating').innerHTML = renderStars(data.avg_rating);
+                document.getElementById('res-reviews-count').textContent = `${data.avg_rating}/5 (${data.total_reviews} reviews)`;
+            } else {
+                msgDiv.textContent = '❌ ' + (data.detail || 'Failed');
+                msgDiv.style.background = 'rgba(255,0,0,0.15)';
+                msgDiv.style.color = '#ff6b6b';
+            }
+            msgDiv.style.display = 'block';
+            setTimeout(() => msgDiv.style.display = 'none', 3000);
+        }
+
+        async function loadReviews() {
+            const res = await fetch('/api/resources/' + resourceId + '/reviews');
+            const data = await res.json();
+            const container = document.getElementById('reviews-list');
+
+            if (data.reviews.length === 0) {
+                container.innerHTML = '<p style="color:#666; font-size:14px; text-align:center; padding:16px;">No reviews yet. Be the first!</p>';
+                return;
+            }
+
+            container.innerHTML = data.reviews.map(r => `
+                <div style="padding:16px; background:rgba(255,255,255,0.05); border-radius:10px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="width:32px; height:32px; border-radius:50%; background:#0F5257; display:flex; align-items:center; justify-content:center; font-weight:700; color:#55D6BE; font-size:13px;">${(r.user_name || 'U').charAt(0).toUpperCase()}</div>
+                            <span style="font-weight:600; font-size:14px;">${r.user_name || 'Anonymous'}</span>
+                        </div>
+                        <div>${renderStars(r.rating)}</div>
+                    </div>
+                    ${r.comment ? `<p style="color:#ccc; font-size:13px; margin-left:42px;">${r.comment}</p>` : ''}
+                </div>
+            `).join('');
+        }
+
+        initStarInput();
+        loadResource();
+    </script>
+</body>
+
+</html>

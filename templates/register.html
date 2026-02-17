@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - EduHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="bg-glow"></div>
+
+    <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;">
+        <div class="glass-card" style="width:100%; max-width:480px;">
+            <div style="text-align:center; margin-bottom:28px;">
+                <img src="/static/images/LOGO_WHITE.png" alt="EduHub"
+                    style="width:64px; height:64px; object-fit:contain; margin-bottom:12px;">
+                <h1 style="font-size:24px; color:#F5F3F5;">Create Your Account</h1>
+                <p style="color:#999; font-size:13px; margin-top:6px;">Join the community. Share knowledge.</p>
+            </div>
+
+            <div id="error-msg"
+                style="display:none; background:rgba(255,0,0,0.15); color:#ff6b6b; padding:12px; border-radius:8px; margin-bottom:16px; font-size:13px; text-align:center;">
+            </div>
+
+            <form id="register-form" style="display:flex; flex-direction:column; gap:14px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div>
+                        <label class="form-label">Full Name</label>
+                        <input type="text" id="name" class="form-input" placeholder="Your name" required>
+                    </div>
+                    <div>
+                        <label class="form-label">Email</label>
+                        <input type="email" id="email" class="form-input" placeholder="you@email.com" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="Min 6 characters" required
+                        minlength="6">
+                </div>
+                <div>
+                    <label class="form-label">College / University</label>
+                    <input type="text" id="college" class="form-input" placeholder="e.g. Tribhuvan University" required>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                    <div>
+                        <label class="form-label">Branch</label>
+                        <select id="branch" class="form-input" required>
+                            <option value="">Select Branch</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Civil">Civil</option>
+                            <option value="Mechanical">Mechanical</option>
+                            <option value="BCA">BCA</option>
+                            <option value="BIT">BIT</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Semester</label>
+                        <select id="semester" class="form-input" required>
+                            <option value="">Select</option>
+                            <option value="1">1st</option>
+                            <option value="2">2nd</option>
+                            <option value="3">3rd</option>
+                            <option value="4">4th</option>
+                            <option value="5">5th</option>
+                            <option value="6">6th</option>
+                            <option value="7">7th</option>
+                            <option value="8">8th</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary-custom"
+                    style="width:100%; padding:12px; border-radius:12px; font-size:15px; margin-top:8px;">
+                    <i class="fas fa-user-plus" style="margin-right:8px;"></i> Create Account
+                </button>
+            </form>
+
+            <p style="text-align:center; margin-top:20px; font-size:14px; color:#999;">
+                Already have an account? <a href="/login"
+                    style="color:#55D6BE; text-decoration:none; font-weight:600;">Sign in</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        if (localStorage.getItem('eduhub_token')) {
+            window.location.href = '/dashboard';
+        }
+
+        document.getElementById('register-form').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            const errorDiv = document.getElementById('error-msg');
+            errorDiv.style.display = 'none';
+
+            const body = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                college: document.getElementById('college').value,
+                branch: document.getElementById('branch').value,
+                semester: parseInt(document.getElementById('semester').value),
+            };
+
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Creating account...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Registration failed');
+
+                localStorage.setItem('eduhub_token', data.token);
+                localStorage.setItem('eduhub_user', JSON.stringify(data.user));
+                window.location.href = '/loading';
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-user-plus" style="margin-right:8px;"></i> Create Account';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+
+</html>

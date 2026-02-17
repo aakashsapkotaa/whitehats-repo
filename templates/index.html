@@ -1,214 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EduHub - Share Knowledge</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Browse Resources - EduHub</title>
+    <link rel="stylesheet" href="/static/css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="bg-glow"></div>
 
-    <!-- ================= SECTION 1: LOGIN ================= -->
-    <section id="login-section" class="section min-h-screen flex items-center justify-center p-6">
-        <div class="glass-card w-full max-w-md">
-            <div class="text-center mb-8">
-                <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" 
-                     alt="EduHub Logo" 
-                     class="w-20 h-20 mx-auto object-contain mb-4">
-                <h1 class="text-3xl font-bold text-[#F5F3F5]">Welcome to EduHub</h1>
-                <p class="text-gray-400 text-sm mt-2">The Nexus of Shared Knowledge</p>
-            </div>
-            
-            <div class="space-y-3 mb-6">
-                <button onclick="handleSocialLogin('Google')" class="social-btn social-btn-google">
-                    <i class="fab fa-google text-red-500 text-lg"></i>
-                    <span>Continue with Google</span>
-                </button>
-                <button onclick="handleSocialLogin('GitHub')" class="social-btn social-btn-github">
-                    <i class="fab fa-github text-lg"></i>
-                    <span>Continue with GitHub</span>
-                </button>
-            </div>
-            
-            <div class="divider">
-                <span>Or manually</span>
-            </div>
-            
-            <form onsubmit="handleManualLogin(event)" class="space-y-4">
-                <div>
-                    <label class="form-label">Email Address</label>
-                    <input type="email" class="form-input" placeholder="student@eduhub.com" required>
-                </div>
-                <div>
-                    <label class="form-label">Password</label>
-                    <input type="password" class="form-input" placeholder="••••••••" required>
-                </div>
-                <button type="submit" class="btn-primary-custom w-full py-3 rounded-xl mt-2">
-                    Sign In
-                </button>
-            </form>
-            
-            <p class="text-center mt-6 text-sm text-gray-400">
-                Don't have an account? <a href="#" class="text-[#55D6BE] hover:underline">Register here</a>
-            </p>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <a href="/dashboard" style="display:flex; align-items:center; gap:12px; text-decoration:none; color:white;">
+                <img src="/static/images/LOGO_WHITE.png" style="width:32px; height:32px; object-fit:contain;">
+                <span style="font-weight:700; font-size:20px;">EduHub</span>
+            </a>
         </div>
-    </section>
+        <div style="display:flex; align-items:center; gap:20px;">
+            <a href="/dashboard" style="color:#ccc; text-decoration:none;">Dashboard</a>
+            <a href="/upload" style="color:#ccc; text-decoration:none;">Upload</a>
+            <button onclick="logout()" style="background:none; border:none; color:#999; cursor:pointer;"><i
+                    class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </nav>
 
-    <!-- ================= SECTION 2: AVATAR UPLOAD ================= -->
-    <section id="avatar-section" class="section min-h-screen flex items-center justify-center p-6 hidden-section">
-        <div class="glass-card w-full max-w-md text-center">
-            <h2 class="text-2xl font-bold mb-2 text-[#F5F3F5]">Set Your Identity</h2>
-            <p class="text-gray-400 mb-8 text-sm">How should the community see you?</p>
+    <main style="min-height:calc(100vh - 64px); padding:32px; padding-top:96px;">
+        <div style="max-width:1100px; margin:0 auto;">
+            <h1 style="font-size:28px; margin-bottom:24px;">Browse Resources</h1>
 
-            <!-- Avatar Preview -->
-            <div class="avatar-preview mx-auto mb-6" onclick="triggerFileInput()">
-                <div id="avatar-preview">
-                    <i class="fas fa-user text-4xl text-[#55D6BE]"></i>
+            <!-- Search & Filters -->
+            <div class="glass-card" style="border-radius:12px; padding:20px; margin-bottom:28px;">
+                <div style="display:flex; gap:12px; margin-bottom:16px;">
+                    <input type="text" id="search-input" class="form-input"
+                        placeholder="Search by title, subject, or tags..." style="flex:1;">
+                    <button onclick="loadResources()" class="btn-primary-custom"
+                        style="padding:10px 24px; border-radius:10px; white-space:nowrap;">
+                        <i class="fas fa-search"></i> Search
+                    </button>
                 </div>
-                <div class="avatar-camera">
-                    <i class="fas fa-camera text-sm"></i>
+                <div style="display:flex; flex-wrap:wrap; gap:12px;">
+                    <select id="filter-semester" class="form-input" style="width:auto; min-width:120px;"
+                        onchange="loadResources()">
+                        <option value="">All Semesters</option>
+                        <option value="1">Sem 1</option>
+                        <option value="2">Sem 2</option>
+                        <option value="3">Sem 3</option>
+                        <option value="4">Sem 4</option>
+                        <option value="5">Sem 5</option>
+                        <option value="6">Sem 6</option>
+                        <option value="7">Sem 7</option>
+                        <option value="8">Sem 8</option>
+                    </select>
+                    <select id="filter-type" class="form-input" style="width:auto; min-width:140px;"
+                        onchange="loadResources()">
+                        <option value="">All Types</option>
+                        <option value="notes">Notes</option>
+                        <option value="slides">Slides</option>
+                        <option value="paper">Past Paper</option>
+                        <option value="assignment">Assignment</option>
+                        <option value="book">Book</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <select id="filter-privacy" class="form-input" style="width:auto; min-width:120px;"
+                        onchange="loadResources()">
+                        <option value="">All Access</option>
+                        <option value="public">🌍 Public</option>
+                        <option value="private">🔒 Private</option>
+                    </select>
                 </div>
             </div>
 
-            <input type="file" id="file-input" accept="image/*" class="hidden" onchange="previewImage(event)">
+            <!-- Results count -->
+            <p id="results-count" style="color:#999; font-size:13px; margin-bottom:16px;"></p>
 
-            <!-- Drop Area -->
-            <div id="drop-area" class="file-drop-area mb-6" onclick="triggerFileInput()">
-                <p class="text-sm text-gray-300">
-                    <i class="fas fa-cloud-upload-alt mr-2 text-[#55D6BE]"></i>
-                    <span id="file-name">Click to upload or drag & drop</span>
-                </p>
+            <!-- Resource Grid -->
+            <div id="resources-grid"
+                style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:20px;">
+                <p style="color:#666; text-align:center; grid-column:1/-1; padding:40px;">Loading resources...</p>
             </div>
 
-            <button onclick="proceedToLoading()" class="btn-primary-custom w-full py-3 rounded-xl">
-                Continue to EduHub
-            </button>
+            <!-- Pagination -->
+            <div id="pagination" style="display:flex; justify-content:center; gap:8px; margin-top:28px;"></div>
         </div>
-    </section>
+    </main>
 
-    <!-- ================= SECTION 3: LOADING SCREEN ================= -->
-    <section id="loading-section" class="loading-screen hidden-section">
-        <!-- Animated Logo -->
-        <div class="mb-8 relative">
-            <div class="absolute inset-0 bg-[#55D6BE] blur-[60px] opacity-30 rounded-full"></div>
-            <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" 
-                 alt="Loading" 
-                 class="logo-loader relative z-10">
-        </div>
+    <script>
+        const token = localStorage.getItem('eduhub_token');
+        if (!token) window.location.href = '/login';
 
-        <!-- Dynamic Quote -->
-        <div class="max-w-2xl text-center px-6 min-h-[120px] flex flex-col justify-center">
-            <p id="quote-text" class="text-xl md:text-2xl font-light italic text-[#F5F3F5] leading-relaxed"></p>
-            <p id="quote-author" class="text-sm font-bold text-[#55D6BE] mt-4 uppercase tracking-widest opacity-0 transition-opacity duration-1000"></p>
-        </div>
+        function logout() {
+            localStorage.removeItem('eduhub_token');
+            localStorage.removeItem('eduhub_user');
+            window.location.href = '/login';
+        }
 
-        <!-- Loading Bar -->
-        <div class="w-64 h-1 bg-gray-700 rounded-full mt-8 overflow-hidden">
-            <div class="h-full bg-[#55D6BE] loading-bar w-1/2 rounded-full"></div>
-        </div>
-        <p class="text-xs text-gray-500 mt-3 animate-pulse">Syncing resources...</p>
-    </section>
+        let currentPage = 1;
 
-    <!-- ================= SECTION 4: DASHBOARD ================= -->
-    <section id="dashboard-section" class="section hidden-section min-h-screen flex flex-col">
-        <!-- Navbar -->
-        <nav class="navbar">
-            <div class="flex items-center gap-3">
-                <img src="{{ url_for('static', filename='images/LOGO_WHITE.png') }}" class="w-8 h-8 object-contain">
-                <span class="font-bold text-xl tracking-tight">EduHub</span>
-            </div>
-            <div class="flex items-center gap-4">
-                <button class="text-gray-300 hover:text-white transition">
-                    <i class="fas fa-bell text-lg"></i>
-                </button>
-                <div class="w-10 h-10 rounded-full bg-[#0F5257] overflow-hidden border-2 border-[#55D6BE]">
-                    <img id="nav-avatar" src="" class="w-full h-full object-cover hidden">
-                </div>
-                <button onclick="logout()" class="text-gray-400 hover:text-white transition">
-                    <i class="fas fa-sign-out-alt"></i>
-                </button>
-            </div>
-        </nav>
+        // Enter key search
+        document.getElementById('search-input').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') loadResources();
+        });
 
-        <!-- Main Content -->
-        <main class="flex-1 p-8 overflow-y-auto">
-            <div class="max-w-6xl mx-auto">
-                <header class="mb-10">
-                    <h1 class="text-4xl font-bold mb-2">Hello, <span id="welcome-name">Learner</span>!</h1>
-                    <p class="text-gray-400">Ready to share some knowledge today?</p>
-                </header>
+        function getTypeIcon(type) {
+            const icons = { notes: 'fa-file-alt', slides: 'fa-file-powerpoint', paper: 'fa-file-lines', assignment: 'fa-tasks', book: 'fa-book', other: 'fa-file' };
+            return icons[type] || 'fa-file';
+        }
 
-                <!-- Stats Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-                    <div class="stat-card">
-                        <h3 class="text-gray-400 text-xs uppercase tracking-wider">Resources Shared</h3>
-                        <p class="text-3xl font-bold mt-2">12</p>
-                    </div>
-                    <div class="stat-card" style="border-left-color: #0F5257;">
-                        <h3 class="text-gray-400 text-xs uppercase tracking-wider">Community Rating</h3>
-                        <p class="text-3xl font-bold mt-2">4.8/5</p>
-                    </div>
-                    <div class="stat-card" style="border-left-color: #a855f7;">
-                        <h3 class="text-gray-400 text-xs uppercase tracking-wider">Study Streak</h3>
-                        <p class="text-3xl font-bold mt-2">5 Days</p>
-                    </div>
-                </div>
+        function getTypeColor(type) {
+            const colors = { notes: '#55D6BE,#0F5257', slides: '#a855f7,#7c3aed', paper: '#f59e0b,#d97706', assignment: '#3b82f6,#2563eb', book: '#ec4899,#db2777' };
+            return colors[type] || '#55D6BE,#0F5257';
+        }
 
-                <!-- Quick Actions -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                    <div class="glass-card rounded-xl p-6 cursor-pointer hover:border-[#55D6BE] transition border border-transparent">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-lg bg-[#55D6BE]/20 flex items-center justify-center">
-                                <i class="fas fa-upload text-[#55D6BE] text-xl"></i>
+        function renderStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += `<i class="fas fa-star" style="color:${i <= Math.round(rating) ? '#f59e0b' : '#444'}; font-size:11px;"></i>`;
+            }
+            return stars;
+        }
+
+        async function loadResources(page = 1) {
+            currentPage = page;
+            const search = document.getElementById('search-input').value;
+            const semester = document.getElementById('filter-semester').value;
+            const type = document.getElementById('filter-type').value;
+            const privacy = document.getElementById('filter-privacy').value;
+
+            let url = `/api/resources?page=${page}&limit=12`;
+            if (search) url += `&search=${encodeURIComponent(search)}`;
+            if (semester) url += `&semester=${semester}`;
+            if (type) url += `&resource_type=${type}`;
+            if (privacy) url += `&privacy=${privacy}`;
+
+            try {
+                const res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
+                const data = await res.json();
+
+                document.getElementById('results-count').textContent = `${data.total} resource${data.total !== 1 ? 's' : ''} found`;
+
+                const grid = document.getElementById('resources-grid');
+                if (data.resources.length === 0) {
+                    grid.innerHTML = '<p style="color:#666; text-align:center; grid-column:1/-1; padding:40px;">No resources found. Try a different search.</p>';
+                    document.getElementById('pagination').innerHTML = '';
+                    return;
+                }
+
+                grid.innerHTML = data.resources.map(r => {
+                    const colors = getTypeColor(r.resource_type);
+                    const tags = (r.tags || []).slice(0, 3).map(t => `<span style="background:rgba(85,214,190,0.15); color:#55D6BE; padding:2px 8px; border-radius:20px; font-size:11px;">${t}</span>`).join('');
+                    return `
+                    <a href="/resource/${r._id}" style="text-decoration:none; color:white;">
+                        <div class="glass-card" style="border-radius:12px; padding:20px; cursor:pointer; border:1px solid transparent; transition:all 0.3s; height:100%;" onmouseover="this.style.borderColor='#55D6BE'; this.style.transform='translateY(-4px)'" onmouseout="this.style.borderColor='transparent'; this.style.transform='translateY(0)'">
+                            <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:12px;">
+                                <div style="width:48px; height:48px; border-radius:10px; background:linear-gradient(135deg, ${colors}); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                                    <i class="fas ${getTypeIcon(r.resource_type)}" style="color:white; font-size:18px;"></i>
+                                </div>
+                                <div style="flex:1; min-width:0;">
+                                    <h3 style="font-size:16px; font-weight:700; margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${r.title}</h3>
+                                    <p style="color:#999; font-size:12px;">${r.subject} · Sem ${r.semester}</p>
+                                </div>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-lg">Upload Resource</h3>
-                                <p class="text-gray-400 text-sm">Share notes, PDFs, or links</p>
+                            ${r.description ? `<p style="color:#aaa; font-size:13px; margin-bottom:12px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${r.description}</p>` : ''}
+                            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;">${tags}</div>
+                            <div style="display:flex; align-items:center; justify-content:space-between; font-size:12px; color:#888;">
+                                <span>${r.privacy === 'private' ? '🔒 Private' : '🌍 Public'}</span>
+                                <span>${r.avg_rating > 0 ? renderStars(r.avg_rating) + ' ' + r.avg_rating : 'No ratings'}</span>
                             </div>
+                            <p style="font-size:11px; color:#666; margin-top:8px;"><i class="fas fa-user" style="margin-right:4px;"></i>${r.uploader_name}</p>
                         </div>
-                    </div>
-                    <div class="glass-card rounded-xl p-6 cursor-pointer hover:border-[#55D6BE] transition border border-transparent">
-                        <div class="flex items-center gap-4">
-                            <div class="w-12 h-12 rounded-lg bg-[#0F5257]/50 flex items-center justify-center">
-                                <i class="fas fa-search text-[#55D6BE] text-xl"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-lg">Browse Resources</h3>
-                                <p class="text-gray-400 text-sm">Find study materials</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                    </a>`;
+                }).join('');
 
-                <!-- Recent Activity -->
-                <div class="glass-card rounded-xl p-6">
-                    <h3 class="font-bold text-lg mb-4">Recent Activity</h3>
-                    <div class="space-y-4">
-                        <div class="flex items-center gap-4 p-4 bg-white/5 rounded-lg">
-                            <div class="w-10 h-10 rounded-full bg-[#55D6BE] flex items-center justify-center text-[#32292F] font-bold">JD</div>
-                            <div class="flex-1">
-                                <p class="font-medium">John Doe shared a new note</p>
-                                <p class="text-sm text-gray-400">Advanced Calculus - Chapter 5</p>
-                            </div>
-                            <span class="text-xs text-gray-500">2h ago</span>
-                        </div>
-                        <div class="flex items-center gap-4 p-4 bg-white/5 rounded-lg">
-                            <div class="w-10 h-10 rounded-full bg-[#0F5257] flex items-center justify-center text-white font-bold">AS</div>
-                            <div class="flex-1">
-                                <p class="font-medium">Alice Smith uploaded a PDF</p>
-                                <p class="text-sm text-gray-400">Machine Learning Basics</p>
-                            </div>
-                            <span class="text-xs text-gray-500">5h ago</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </main>
-    </section>
+                // Pagination
+                let paginationHTML = '';
+                for (let i = 1; i <= data.pages; i++) {
+                    const active = i === page;
+                    paginationHTML += `<button onclick="loadResources(${i})" style="padding:8px 14px; border-radius:8px; border:none; cursor:pointer; font-weight:600; background:${active ? '#55D6BE' : 'rgba(255,255,255,0.1)'}; color:${active ? '#32292F' : '#ccc'};">${i}</button>`;
+                }
+                document.getElementById('pagination').innerHTML = paginationHTML;
+            } catch (e) {
+                console.error(e);
+            }
+        }
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+        loadResources();
+    </script>
 </body>
+
 </html>

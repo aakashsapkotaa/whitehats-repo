@@ -1,40 +1,84 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - EduHub</title>
     <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="bg-glow"></div>
 
-<div style="height:100vh; display:flex; justify-content:center; align-items:center;">
+    <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;">
+        <div class="glass-card" style="width:100%; max-width:420px;">
+            <div style="text-align:center; margin-bottom:32px;">
+                <img src="/static/images/LOGO_WHITE.png" alt="EduHub" style="width:80px; height:80px; object-fit:contain; margin-bottom:16px;">
+                <h1 style="font-size:28px; color:#F5F3F5;">Welcome to EduHub</h1>
+                <p style="color:#999; font-size:14px; margin-top:8px;">The Nexus of Shared Knowledge</p>
+            </div>
 
-    <div class="glass-card" style="width:350px; text-align:center;">
+            <div id="error-msg" style="display:none; background:rgba(255,0,0,0.15); color:#ff6b6b; padding:12px; border-radius:8px; margin-bottom:16px; font-size:13px; text-align:center;"></div>
 
-        <img src="/static/images/logo.png" width="80">
+            <form id="login-form" style="display:flex; flex-direction:column; gap:16px;">
+                <div>
+                    <label class="form-label">Email Address</label>
+                    <input type="email" id="email" class="form-input" placeholder="student@eduhub.com" required>
+                </div>
+                <div>
+                    <label class="form-label">Password</label>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary-custom" style="width:100%; padding:12px; border-radius:12px; font-size:15px; margin-top:8px;">
+                    <i class="fas fa-sign-in-alt" style="margin-right:8px;"></i> Sign In
+                </button>
+            </form>
 
-        <h2 style="margin-top:20px;">Welcome to EduHub</h2>
-        <p style="opacity:0.7;">Share knowledge. Grow together.</p>
-
-        <button class="btn-primary-custom" style="width:100%; padding:10px; margin-top:20px;">
-            Continue with Google
-        </button>
-
-        <button class="btn-primary-custom" style="width:100%; padding:10px; margin-top:10px;">
-            Continue with GitHub
-        </button>
-
-        <hr style="margin:20px 0; opacity:0.3;">
-
-        <input type="email" placeholder="Email" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:none;">
-        <input type="password" placeholder="Password" style="width:100%; padding:10px; border-radius:8px; border:none;">
-
-        <button class="btn-primary-custom" style="width:100%; padding:10px; margin-top:15px;">
-            Login
-        </button>
-
+            <p style="text-align:center; margin-top:24px; font-size:14px; color:#999;">
+                Don't have an account? <a href="/register" style="color:#55D6BE; text-decoration:none; font-weight:600;">Register here</a>
+            </p>
+        </div>
     </div>
 
-</div>
+    <script>
+        // If already logged in, redirect
+        if (localStorage.getItem('eduhub_token')) {
+            window.location.href = '/loading';
+        }
 
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            const errorDiv = document.getElementById('error-msg');
+            errorDiv.style.display = 'none';
+
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Signing in...';
+            btn.disabled = true;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password})
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    throw new Error(data.detail || 'Login failed');
+                }
+                localStorage.setItem('eduhub_token', data.token);
+                localStorage.setItem('eduhub_user', JSON.stringify(data.user));
+                window.location.href = '/loading';
+            } catch (err) {
+                errorDiv.textContent = err.message;
+                errorDiv.style.display = 'block';
+                btn.innerHTML = '<i class="fas fa-sign-in-alt" style="margin-right:8px;"></i> Sign In';
+                btn.disabled = false;
+            }
+        });
+    </script>
 </body>
 </html>
